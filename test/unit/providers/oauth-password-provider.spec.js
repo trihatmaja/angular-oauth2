@@ -3,7 +3,7 @@
  * Test `OAuthProvider`.
  */
 
-describe('OAuthProvider', function() {
+describe('OAuthPasswordProvider', function() {
   var defaults = {
     baseUrl: 'https://api.website.com',
     clientId: 'CLIENT_ID',
@@ -17,8 +17,8 @@ describe('OAuthProvider', function() {
 
     beforeEach(function() {
       angular.module('angular-oauth2.test', [])
-        .config(function(OAuthProvider) {
-          provider = OAuthProvider;
+        .config(function(OAuthPasswordProvider) {
+          provider = OAuthPasswordProvider;
         });
 
       angular.mock.module('angular-oauth2', 'angular-oauth2.test');
@@ -126,8 +126,8 @@ describe('OAuthProvider', function() {
   describe('$get()', function() {
     beforeEach(function() {
       angular.module('angular-oauth2.test', ['angular-cookies.mock'])
-        .config(function(OAuthProvider) {
-          OAuthProvider.configure(defaults);
+        .config(function(OAuthPasswordProvider) {
+          OAuthPasswordProvider.configure(defaults);
         });
 
       angular.mock.module('angular-oauth2', 'angular-oauth2.test');
@@ -138,14 +138,14 @@ describe('OAuthProvider', function() {
     }));
 
     describe('isAuthenticated()', function() {
-      it('should be true when there is a stored `token` cookie', inject(function(OAuth, OAuthToken) {
+      it('should be true when there is a stored `token` cookie', inject(function(OAuthPassword, OAuthToken) {
         OAuthToken.setToken({ token_type: 'bearer', access_token: 'foo', expires_in: 3600, refresh_token: 'bar' });
 
-        OAuth.isAuthenticated().should.be.true;
+        OAuthPassword.isAuthenticated().should.be.true;
       }));
 
-      it('should be false when there is no stored `token` cookie', inject(function(OAuth) {
-        OAuth.isAuthenticated().should.be.false;
+      it('should be false when there is no stored `token` cookie', inject(function(OAuthPassword) {
+        OAuthPassword.isAuthenticated().should.be.false;
       }));
     });
 
@@ -158,10 +158,10 @@ describe('OAuthProvider', function() {
         client_secret: defaults.clientSecret
       });
 
-      it('should call `queryString.stringify`', inject(function(OAuth) {
+      it('should call `queryString.stringify`', inject(function(OAuthPassword) {
         sinon.spy(queryString, 'stringify');
 
-        OAuth.getAccessToken({
+        OAuthPassword.getAccessToken({
           username: 'foo',
           password: 'bar'
         });
@@ -178,11 +178,11 @@ describe('OAuthProvider', function() {
         queryString.stringify.restore();
       }));
 
-      it('should return an error if user credentials are invalid', inject(function($httpBackend, OAuth) {
+      it('should return an error if user credentials are invalid', inject(function($httpBackend, OAuthPassword) {
         $httpBackend.expectPOST(defaults.baseUrl + defaults.grantPath, data)
           .respond(400, { error: 'invalid_grant' });
 
-        OAuth.getAccessToken({
+        OAuthPassword.getAccessToken({
           username: 'foo',
           password: 'bar'
         }).then(function() {
@@ -198,11 +198,11 @@ describe('OAuthProvider', function() {
         $httpBackend.verifyNoOutstandingRequest();
       }));
 
-      it('should retrieve and store `token` if request is successful', inject(function($httpBackend, OAuth, OAuthToken) {
+      it('should retrieve and store `token` if request is successful', inject(function($httpBackend, OAuthPassword, OAuthToken) {
         $httpBackend.expectPOST(defaults.baseUrl + defaults.grantPath, data)
           .respond({ token_type: 'bearer', access_token: 'foo', expires_in: 3600, refresh_token: 'bar' });
 
-        OAuth.getAccessToken({
+        OAuthPassword.getAccessToken({
           username: 'foo',
           password: 'bar'
         }).then(function(response) {
@@ -226,12 +226,12 @@ describe('OAuthProvider', function() {
         client_secret: defaults.clientSecret
       };
 
-      it('should call `queryString.stringify`', inject(function(OAuth, OAuthToken) {
+      it('should call `queryString.stringify`', inject(function(OAuthPassword, OAuthToken) {
         sinon.spy(queryString, 'stringify');
 
         OAuthToken.setToken({ token_type: 'bearer', access_token: 'foo', expires_in: 3600, refresh_token: 'bar' });
 
-        OAuth.getRefreshToken();
+        OAuthPassword.getRefreshToken();
 
         queryString.stringify.callCount.should.equal(1);
         queryString.stringify.firstCall.args.should.have.lengthOf(1);
@@ -244,11 +244,11 @@ describe('OAuthProvider', function() {
         queryString.stringify.restore();
       }));
 
-      it('should return an error if `refresh_token` is missing', inject(function($httpBackend, OAuth) {
+      it('should return an error if `refresh_token` is missing', inject(function($httpBackend, OAuthPassword) {
         $httpBackend.expectPOST(defaults.baseUrl + defaults.grantPath, queryString.stringify(_.assign({}, data, { 'refresh_token': undefined })))
           .respond(400, { error: 'invalid_request' });
 
-        OAuth.getRefreshToken().then(function() {
+        OAuthPassword.getRefreshToken().then(function() {
           should.fail();
         }).catch(function(response) {
           response.status.should.equal(400);
@@ -261,13 +261,13 @@ describe('OAuthProvider', function() {
         $httpBackend.verifyNoOutstandingRequest();
       }));
 
-      it('should return an error if `refresh_token` is invalid', inject(function($httpBackend, OAuth, OAuthToken) {
+      it('should return an error if `refresh_token` is invalid', inject(function($httpBackend, OAuthPassword, OAuthToken) {
         OAuthToken.setToken({ token_type: 'bearer', access_token: 'foo', expires_in: 3600, refresh_token: 'bar' });
 
         $httpBackend.expectPOST(defaults.baseUrl + defaults.grantPath, queryString.stringify(data))
           .respond(400, { error: 'invalid_grant' });
 
-        OAuth.getRefreshToken().then(function() {
+        OAuthPassword.getRefreshToken().then(function() {
           should.fail();
         }).catch(function(response) {
           response.status.should.equal(400);
@@ -280,13 +280,13 @@ describe('OAuthProvider', function() {
         $httpBackend.verifyNoOutstandingRequest();
       }));
 
-      it('should retrieve and store `refresh_token` if request is successful', inject(function($httpBackend, OAuth, OAuthToken) {
+      it('should retrieve and store `refresh_token` if request is successful', inject(function($httpBackend, OAuthPassword, OAuthToken) {
         OAuthToken.setToken({ token_type: 'bearer', access_token: 'foo', expires_in: 3600, refresh_token: 'bar' });
 
         $httpBackend.expectPOST(defaults.baseUrl + defaults.grantPath, queryString.stringify(data))
           .respond({ token_type: 'bearer', access_token: 'qux', expires_in: 3600, refresh_token: 'biz' });
 
-        OAuth.getRefreshToken().then(function(response) {
+        OAuthPassword.getRefreshToken().then(function(response) {
           response.data.should.eql({
             token_type: 'bearer',
             access_token: 'qux',
@@ -305,12 +305,12 @@ describe('OAuthProvider', function() {
     });
 
     describe('revokeToken()', function () {
-      it('should call `queryString.stringify`', inject(function(OAuth, OAuthToken) {
+      it('should call `queryString.stringify`', inject(function(OAuthPassword, OAuthToken) {
         sinon.spy(queryString, 'stringify');
 
         OAuthToken.setToken({ token_type: 'bearer', access_token: 'foo', expires_in: 3600, refresh_token: 'bar' });
 
-        OAuth.revokeToken();
+        OAuthPassword.revokeToken();
 
         queryString.stringify.callCount.should.equal(1);
         queryString.stringify.firstCall.args.should.have.lengthOf(1);
@@ -323,12 +323,12 @@ describe('OAuthProvider', function() {
         queryString.stringify.restore();
       }));
 
-      it('should call `queryString.stringify` with `access_token` if `refresh_token` is not available', inject(function(OAuth, OAuthToken) {
+      it('should call `queryString.stringify` with `access_token` if `refresh_token` is not available', inject(function(OAuthPassword, OAuthToken) {
         sinon.spy(queryString, 'stringify');
 
         OAuthToken.setToken({ token_type: 'bearer', access_token: 'foo', expires_in: 3600 });
 
-        OAuth.revokeToken();
+        OAuthPassword.revokeToken();
 
         queryString.stringify.callCount.should.equal(1);
         queryString.stringify.firstCall.args.should.have.lengthOf(1);
@@ -341,7 +341,7 @@ describe('OAuthProvider', function() {
         queryString.stringify.restore();
       }));
 
-      it('should return an error if `token` is missing', inject(function($httpBackend, OAuth) {
+      it('should return an error if `token` is missing', inject(function($httpBackend, OAuthPassword) {
         var data = queryString.stringify({
           client_id: defaults.clientId,
           token: undefined,
@@ -352,7 +352,7 @@ describe('OAuthProvider', function() {
         $httpBackend.expectPOST(defaults.baseUrl + defaults.revokePath, data)
           .respond(400, { error: 'invalid_request' });
 
-        OAuth.revokeToken().then(function() {
+        OAuthPassword.revokeToken().then(function() {
           should.fail();
         }).catch(function(response) {
           response.status.should.equal(400);
@@ -364,7 +364,7 @@ describe('OAuthProvider', function() {
         $httpBackend.verifyNoOutstandingRequest();
       }));
 
-      it('should revoke and remove `token` if request is successful', inject(function($httpBackend, OAuth, OAuthToken) {
+      it('should revoke and remove `token` if request is successful', inject(function($httpBackend, OAuthPassword, OAuthToken) {
         OAuthToken.setToken({ token_type: 'bearer', access_token: 'foo', expires_in: 3600, refresh_token: 'bar' });
 
         var data = queryString.stringify({
@@ -377,7 +377,7 @@ describe('OAuthProvider', function() {
         $httpBackend.expectPOST(defaults.baseUrl + defaults.revokePath, data)
           .respond(200);
 
-        OAuth.revokeToken().then(function() {
+        OAuthPassword.revokeToken().then(function() {
           (undefined === OAuthToken.getToken()).should.be.true;
         }).catch(function() {
           should.fail();

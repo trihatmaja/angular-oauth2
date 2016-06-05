@@ -33,8 +33,8 @@ describe('OAuthTokenProvider', function() {
   describe('$get()', function() {
     beforeEach(function() {
       angular.module('angular-oauth2.test', ['angular-cookies.mock'])
-        .config(function(OAuthProvider) {
-          OAuthProvider.configure({
+        .config(function(OAuthPasswordProvider) {
+          OAuthPasswordProvider.configure({
             baseUrl: 'https://api.website.com',
             clientId: 'CLIENT_ID'
           });

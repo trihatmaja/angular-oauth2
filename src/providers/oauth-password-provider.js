@@ -25,7 +25,7 @@ var requiredKeys = [
  * OAuth provider.
  */
 
-function OAuthProvider() {
+function OAuthPasswordProvider() {
   var config;
 
   /**
@@ -74,11 +74,11 @@ function OAuthProvider() {
   };
 
   /**
-   * OAuth service.
+   * OAuthPassword service.
    */
 
   this.$get = function($http, OAuthToken) {
-    class OAuth {
+    class OAuthPassword {
 
       /**
        * Check if `OAuthProvider` is configured.
@@ -86,7 +86,7 @@ function OAuthProvider() {
 
       constructor() {
         if (!config) {
-          throw new Error('`OAuthProvider` must be configured first.');
+          throw new Error('`OAuthPasswordProvider` must be configured first.');
         }
       }
 
@@ -210,14 +210,14 @@ function OAuthProvider() {
       }
     }
 
-    return new OAuth();
+    return new OAuthPassword();
   };
 
   this.$get.$inject = ['$http', 'OAuthToken'];
 }
 
 /**
- * Export `OAuthProvider`.
+ * Export `OAuthPasswordProvider`.
  */
 
-export default OAuthProvider;
+export default OAuthPasswordProvider;

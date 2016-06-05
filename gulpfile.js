@@ -108,4 +108,4 @@ gulp.task('test', ['scripts'], function() {
  */
 
 gulp.task('build', ['scripts-minify']);
-gulp.task('default', ['test']);
+gulp.task('default', ['test', 'scripts-minify']);
